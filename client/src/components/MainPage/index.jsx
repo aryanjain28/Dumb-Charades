@@ -1,5 +1,5 @@
-import { Box, Grid, Snackbar } from "@mui/material";
-import { useSearchParams } from "react-router-dom";
+import { Box, Button, Grid, Snackbar } from "@mui/material";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ChatBox from "./ChatBox";
 import { VideoStream } from "./VideoStream";
 import GuessString from "./GuessString";
@@ -13,6 +13,8 @@ const GameArea = (props) => {
   const [searchParams] = useSearchParams();
   const [roomId, setRoomId] = useState(null);
   const [username, setUsername] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const roomId = searchParams.get("roomId");
@@ -38,7 +40,7 @@ const GameArea = (props) => {
         alignItems="start"
         justifyContent={"space-between"}
       >
-        <Grid item xs={8}>
+        <Grid item xs={2}>
           {socket && (
             <ChatBox socket={socket} roomId={roomId} username={username} />
           )}
@@ -46,7 +48,7 @@ const GameArea = (props) => {
         <Grid
           container
           item
-          xs={2}
+          xs={8}
           display="flex"
           flexDirection="column"
           alignItems="center"
@@ -54,9 +56,18 @@ const GameArea = (props) => {
           gap={1}
         >
           <GuessString text={"Aryan"} />
-          {/* <VideoStream /> */}
+          <VideoStream />
         </Grid>
-        <Grid item></Grid>
+        <Grid item>
+          <Button
+            sx={{ textTransform: "none" }}
+            variant="contained"
+            color="error"
+            onClick={() => navigate("/")}
+          >
+            Exit
+          </Button>
+        </Grid>
       </Grid>
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}

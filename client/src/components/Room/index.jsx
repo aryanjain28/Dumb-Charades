@@ -1,12 +1,15 @@
 import io from "socket.io-client";
 import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const socket = io.connect("http://localhost:3001");
 
 const JoinRoom = (props) => {
   const [name, setName] = useState("");
   const [roomId, setRoomId] = useState();
+
+  const navigate = useNavigate();
 
   return (
     <Grid
@@ -23,6 +26,7 @@ const JoinRoom = (props) => {
         size="small"
         placeholder="Enter Room ID"
         value={roomId}
+        onChange={(e) => setRoomId(e.target.value)}
       />
       <TextField
         fullWidth
@@ -31,7 +35,12 @@ const JoinRoom = (props) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <Button sx={{ textTransform: "none" }} variant="contained">
+      <Button
+        sx={{ textTransform: "none" }}
+        variant="contained"
+        onClick={() => navigate(`game?roomId=${roomId}&user=${name}`)}
+        disabled={!(name && roomId)}
+      >
         Join
       </Button>
     </Grid>
@@ -39,6 +48,9 @@ const JoinRoom = (props) => {
 };
 
 const CreateRoom = () => {
+  const [name, setName] = useState("");
+
+  const navigate = useNavigate();
   return (
     <Grid
       item
@@ -50,15 +62,15 @@ const CreateRoom = () => {
     >
       <TextField
         fullWidth
-        type="number"
         size="small"
-        placeholder="No. of members"
-      ></TextField>
-      <TextField fullWidth size="small" placeholder="Enter Name"></TextField>
+        placeholder="Enter Name"
+        onChange={(e) => setName(e.target.value)}
+      />
       <Button
         sx={{ textTransform: "none", width: "65%" }}
         variant="contained"
         color="success"
+        onClick={() => navigate(`game?roomId=${112233}&user=${name}`)}
       >
         Create Room
       </Button>

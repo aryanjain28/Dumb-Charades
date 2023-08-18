@@ -55,7 +55,6 @@ const chats = [
 ];
 
 const Chat = ({ value, username, dateTime }) => {
-  console.log(dateTime);
   return (
     <Box
       m={1}
@@ -116,17 +115,37 @@ const ChatBox = (props) => {
       display="flex"
       flexDirection="column"
       alignItems="end"
-      justifyContent="end"
+      justifyContent="space-between"
       border="1px solid"
       borderRadius={2}
       borderColor={"lightgray"}
       boxShadow={2}
-      overflow="scroll"
       height={950}
     >
-      {chats.map(({ message, username, dateTime }) => (
-        <Chat value={message} username={username} dateTime={dateTime} />
-      ))}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        sx={{ width: "100%" }}
+        bgcolor="#0f1c52"
+        color="white"
+        py={1}
+      >
+        <Typography variant="h6">{`Room ID: ${roomId}`}</Typography>
+      </Box>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="end"
+        justifyContent="end"
+        overflow="scroll"
+        height="100%"
+        width="100%"
+      >
+        {chats.map(({ message, username, dateTime }) => (
+          <Chat value={message} username={username} dateTime={dateTime} />
+        ))}
+      </Box>
       <Box display="flex" width={1} gap={1}>
         <TextField
           fullWidth
@@ -144,6 +163,7 @@ const ChatBox = (props) => {
             sendMessage();
             setMessage("");
           }}
+          sx={{ bgcolor: "#0f1c52", textTransform: "none" }}
         >
           Send
         </Button>
