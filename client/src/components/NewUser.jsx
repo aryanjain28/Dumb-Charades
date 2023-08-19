@@ -7,10 +7,6 @@ export const NewUser = (props) => {
   const [name, setName] = useState("");
   const [roomId, setRoomId] = useState(2);
 
-  const JoinRoom = () => {
-    socket.emit("join_room", roomId);
-  };
-
   return (
     <div>
       <h1>Dum Charades</h1>
