@@ -59,6 +59,7 @@ io.on("connection", (socket) => {
 
     if (destroyed_peer_id === hostId) {
       hostId = peers.values().next().value;
+      console.log(roomId);
       socket.to(roomId).emit("host_changed", { hostId });
       console.log(`Host Left... New Host: ${hostId}`);
     }

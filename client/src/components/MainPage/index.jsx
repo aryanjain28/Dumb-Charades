@@ -16,39 +16,52 @@ const myPeer = new Peer(undefined, {
 
 const GameArea = (props) => {
   const [searchParams] = useSearchParams();
-  const [roomId, setRoomId] = useState(null);
-  const [username, setUsername] = useState(null);
   const [hostId, setHostId] = useState();
   const [isHost, setIsHost] = useState(false);
   const [userId, setUserId] = useState();
 
   const navigate = useNavigate();
 
-  window.removeEventListener("beforeunload", () => {
-    socket.emit("leave_room", { roomId, destroyed_peer_id: myPeer.id });
+  window.addEventListener("unload", (ev) => {
+    ev.preventDefault();
+    console.log("Unloading...");
+    socket.emit("leave_room", {
+      roomId: searchParams.get("roomId"),
+      destroyed_peer_id: myPeer.id,
+    });
+  });
+
+  window.addEventListener("beforeunload", (ev) => {
+    ev.preventDefault();
+    console.log("Before Unloading...");
+    socket.emit("leave_room", {
+      roomId: searchParams.get("roomId"),
+      destroyed_peer_id: myPeer.id,
+    });
   });
 
   useEffect(() => {
-    const roomId = searchParams.get("roomId");
-    setRoomId(roomId);
-
-    const username = searchParams.get("user");
-    setUsername(username);
-  }, []);
-
-  useEffect(() => {
     myPeer.on("open", async (userId) => {
-      socket.emit("join_room", { roomId, username, userId });
+      socket.emit("join_room", {
+        roomId: searchParams.get("roomId"),
+        username: searchParams.get("user"),
+        userId,
+      });
       setUserId(userId);
-      const { hostId } = (await axios.get("http://localhost:3001/getHost"))
-        .data;
-      setHostId(hostId);
-      setIsHost(hostId === userId);
+      try {
+        const { hostId } = (await axios.get("http://localhost:3001/getHost"))
+          .data;
+        setHostId(hostId);
+        setIsHost(hostId === userId);
+      } catch (error) {
+        console.log("Something went wroing!");
+      }
     });
-  }, []);
+  }, [myPeer]);
 
   useEffect(() => {
     socket.on("host_changed", ({ hostId }) => {
+      console.log("Herere host change event: ", hostId);
       setHostId(hostId);
       setIsHost(hostId === myPeer.id);
     });
@@ -63,7 +76,11 @@ const GameArea = (props) => {
     >
       <Grid item xs={2}>
         {socket && (
-          <ChatBox socket={socket} roomId={roomId} username={username} />
+          <ChatBox
+            socket={socket}
+            roomId={searchParams.get("roomId")}
+            username={searchParams.get("user")}
+          />
         )}
       </Grid>
       <Grid
@@ -76,12 +93,12 @@ const GameArea = (props) => {
         justifyContent="start"
         gap={1}
       >
-        <GuessString text={`Host: ${isHost} ${username}`} />
+        <GuessString text={`Host: ${isHost} ${searchParams.get("user")}`} />
         {userId !== undefined && hostId !== undefined && (
           <VideoStream
             isHost={isHost}
-            username={username}
-            roomId={roomId}
+            username={searchParams.get("user")}
+            roomId={searchParams.get("roomId")}
             socket={socket}
             myPeer={myPeer}
           />
