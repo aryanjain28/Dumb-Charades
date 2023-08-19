@@ -12,6 +12,7 @@ const socket = io.connect("http://localhost:3001");
 const myPeer = new Peer(undefined, {
   host: "/",
   port: 3009,
+  pingInterval: 100,
 });
 
 const GameArea = (props) => {
@@ -49,15 +50,18 @@ const GameArea = (props) => {
       });
       setUserId(userId);
       try {
-        const { hostId } = (await axios.get("http://localhost:3001/getHost"))
-          .data;
+        const { hostId } = (
+          await axios.get(
+            `http://localhost:3001/getHost?roomId=${searchParams.get("roomId")}`
+          )
+        ).data;
         setHostId(hostId);
         setIsHost(hostId === userId);
       } catch (error) {
         console.log("Something went wroing!");
       }
     });
-  }, [myPeer]);
+  }, [myPeer, myPeer.on]);
 
   useEffect(() => {
     socket.on("host_changed", ({ hostId }) => {
