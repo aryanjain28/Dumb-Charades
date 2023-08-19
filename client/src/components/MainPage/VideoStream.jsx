@@ -24,13 +24,19 @@ export const VideoStream = ({ myPeer, socket, isHost }) => {
         })
         .catch(() => {});
     } else {
-      // watcher
+      // Watcher -> Host
       myPeer.on("call", (call) => {
         call.answer();
+
         call.on("stream", (remoteVideoStream) => {
           const video = remoteVideo.current;
           addVideoStream(video, remoteVideoStream);
         });
+      });
+
+      // Watcher -> Watcher
+      myPeer.on("connection", (call) => {
+        call.answer();
       });
     }
   }, [isHost, socket]);
@@ -43,8 +49,12 @@ export const VideoStream = ({ myPeer, socket, isHost }) => {
   };
 
   const connectToNewUser = (userId, stream) => {
-    // host-Peer
-    myPeer.call(userId, stream);
+    if (isHost) {
+      // host-Peer
+      myPeer.call(userId, stream);
+    } else {
+      myPeer.connect(userId);
+    }
   };
 
   return (
