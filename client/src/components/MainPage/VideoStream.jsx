@@ -17,7 +17,7 @@ export const VideoStream = ({ myPeer, socket, isHost }) => {
           const video = myVideo.current;
           addVideoStream(video, myStream);
 
-          // only host connecting to new user
+          // host -> Watcher
           socket.on("joined_room", ({ userId }) => {
             connectToNewUser(userId, myStream);
           });
@@ -27,7 +27,6 @@ export const VideoStream = ({ myPeer, socket, isHost }) => {
       // Watcher -> Host
       myPeer.on("call", (call) => {
         call.answer();
-
         call.on("stream", (remoteVideoStream) => {
           const video = remoteVideo.current;
           addVideoStream(video, remoteVideoStream);

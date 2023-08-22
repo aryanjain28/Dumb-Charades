@@ -10,11 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@koush/wrtc": "^0.5.3",
+    "@mapbox/node-pre-gyp": "^1.0.11",
     "cors": "^2.8.5",
-    "eiows": "^6.6.2",
     "express": "^4.18.2",
+    "node-gyp": "^8.4.1",
     "nodemon": "^3.0.1",
-    "peer": "^1.0.0",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "wrtc": "^0.4.7"
   }
 }
