@@ -1,5 +1,4 @@
 import "./App.css";
-import io from "socket.io-client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GameArea from "./components/MainPage";
 import Room from "./components/Room";
