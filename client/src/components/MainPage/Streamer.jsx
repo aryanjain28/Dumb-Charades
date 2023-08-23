@@ -1,4 +1,4 @@
-import { Button, Grid, Snackbar } from "@mui/material";
+import { Button, CircularProgress, Grid, Snackbar } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -6,6 +6,9 @@ import axios from "axios";
 const server_url = "http://localhost:3001/streamer";
 const Streamer = () => {
   const streamerVideo = useRef();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connected, setIsConnected] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
 
   let peer;
   const createPeerStreamer = (cb) => {
@@ -36,19 +39,32 @@ const Streamer = () => {
     const { data } = await axios.post(server_url, payload);
     const desc = new RTCSessionDescription(data.sdp);
     peer.setRemoteDescription(desc).catch((e) => console.log(e));
-    // peer.onicecandidate = (e) =>
-    //   new RTCPeerConnection(data.peer).addIceCandidate(e.candidate);
   };
 
-  const handleStreamer = async () => {
+  const handleStreamingStart = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     streamerVideo.current.srcObject = stream;
     console.log("Streaming...", stream);
 
+    setIsConnecting(true);
     const newIntervalId = setInterval(() => {
-      createPeerStreamer(() => clearInterval(newIntervalId));
+      createPeerStreamer(() => {
+        setIsConnecting(false);
+        clearInterval(newIntervalId);
+        setIsConnected(true);
+      });
+      setIntervalId(newIntervalId);
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
     }, [500]);
+  };
+
+  const handleStreamingStop = async () => {
+    setIsConnecting(false);
+    setIsConnected(false);
+    peer?.close();
+    clearInterval(intervalId);
+    setIntervalId(null);
+    streamerVideo.current.srcObject = null;
   };
 
   return (
@@ -60,11 +76,18 @@ const Streamer = () => {
         ref={streamerVideo}
         autoPlay
         style={{ border: "1px red solid", width: "100%" }}
-        // onLoadedMetadata={() => console.log("LoadedMetaData")}
       />
 
-      <Button mx={1} variant="outlined" onClick={handleStreamer}>
-        Start Stream
+      <Button
+        endIcon={isConnecting && <CircularProgress color="error" size={18} />}
+        mx={1}
+        variant="outlined"
+        onClick={
+          connected || isConnecting ? handleStreamingStop : handleStreamingStart
+        }
+        color={connected || isConnecting ? "error" : "primary"}
+      >
+        {connected || isConnecting ? `Stop ${connected && "Stream"}` : "Stream"}
       </Button>
     </div>
   );

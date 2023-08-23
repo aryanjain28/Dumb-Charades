@@ -1,11 +1,15 @@
-import { Button } from "@mui/material";
-import { useRef } from "react";
+import { Button, CircularProgress } from "@mui/material";
+import { useRef, useState } from "react";
 import axios from "axios";
 
 const server_url = "http://localhost:3001/watcher";
 
 const Viewer = () => {
   const viewerVideo = useRef();
+
+  const [connected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
 
   let peer;
   const createPeerViewer = async (cb) => {
@@ -44,14 +48,26 @@ const Viewer = () => {
     peer.setRemoteDescription(desc).catch((e) => console.log(e));
   };
 
-  const handleViewer = async () => {
-    // const peer = await createPeerViewer(() => {});
-    // peer.addTransceiver("video", { direction: "recvonly" });
-
+  const handleViewerStreamingStart = async () => {
+    setIsConnecting(true);
     const newIntervalId = setInterval(async () => {
-      await createPeerViewer(() => clearInterval(newIntervalId));
+      await createPeerViewer(() => {
+        clearInterval(newIntervalId);
+        setIsConnecting(false);
+        setIsConnected(true);
+      });
+      setIntervalId(newIntervalId);
       peer.addTransceiver("video", { direction: "recvonly" });
-    }, [1000]);
+    }, [500]);
+  };
+
+  const handleViewerStreamingStop = () => {
+    setIsConnecting(false);
+    setIsConnected(false);
+    clearInterval(intervalId);
+    setIntervalId(null);
+    peer?.close();
+    viewerVideo.current.srcObject = null;
   };
 
   const handleTrackEvent = (e) => {
@@ -72,8 +88,20 @@ const Viewer = () => {
         ref={viewerVideo}
         style={{ border: "1px red solid", width: "100%" }}
       />
-      <Button mx={1} variant="outlined" onClick={handleViewer}>
-        View Stream
+      <Button
+        endIcon={isConnecting && <CircularProgress color="error" size={18} />}
+        mx={1}
+        variant="outlined"
+        onClick={
+          connected || isConnecting
+            ? handleViewerStreamingStop
+            : handleViewerStreamingStart
+        }
+        color={connected || isConnecting ? "error" : "primary"}
+      >
+        {connected || isConnecting
+          ? `Stop ${connected && "Stream"}`
+          : "View Stream"}
       </Button>
     </div>
   );
