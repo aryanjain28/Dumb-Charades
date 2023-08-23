@@ -1,4 +1,4 @@
-import { Button, Grid, Snackbar } from "@mui/material";
+import { Box, Button, Grid, Snackbar } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Viewer from "./Viewer";
@@ -17,10 +17,10 @@ const GameArea = () => {
   };
 
   return (
-    <>
+    <Box display="flex" alignItems="center" justifyContent="space-around">
       <Streamer />
       <Viewer />
-    </>
+    </Box>
   );
 };
 

@@ -100,7 +100,7 @@ const Viewer = () => {
         color={connected || isConnecting ? "error" : "primary"}
       >
         {connected || isConnecting
-          ? `Stop ${connected && "Stream"}`
+          ? `Stop ${connected ? "Stream" : ""}`
           : "View Stream"}
       </Button>
     </div>

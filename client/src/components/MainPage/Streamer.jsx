@@ -87,7 +87,9 @@ const Streamer = () => {
         }
         color={connected || isConnecting ? "error" : "primary"}
       >
-        {connected || isConnecting ? `Stop ${connected && "Stream"}` : "Stream"}
+        {connected || isConnecting
+          ? `Stop ${connected ? "Stream" : ""}`
+          : "Stream"}
       </Button>
     </div>
   );
