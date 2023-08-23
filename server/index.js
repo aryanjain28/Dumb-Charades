@@ -5,6 +5,7 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const bodyparser = require("body-parser");
 const webrtc = require("@koush/wrtc");
+require("dotenv").config();
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -93,9 +94,7 @@ let peerRooms = {};
 let stream;
 
 app.post("/streamer", async ({ body }, res) => {
-  const peer = new webrtc.RTCPeerConnection({
-    iceServers: [{ urls: "stun:stun.stunprotocol.org" }],
-  });
+  const peer = new webrtc.RTCPeerConnection();
   peer.ontrack = (e) => (stream = e.streams[0]);
   const desc = new webrtc.RTCSessionDescription(body.sdp);
   await peer.setRemoteDescription(desc);
@@ -110,13 +109,7 @@ app.post("/streamer", async ({ body }, res) => {
 });
 
 app.use("/watcher", async ({ body }, res) => {
-  const peer = new webrtc.RTCPeerConnection({
-    iceServers: [
-      {
-        urls: "stun:stun.stunprotocol.org",
-      },
-    ],
-  });
+  const peer = new webrtc.RTCPeerConnection();
   const desc = new webrtc.RTCSessionDescription(body.sdp);
   await peer.setRemoteDescription(desc);
   // peer.onicecandidate = async (e) =>

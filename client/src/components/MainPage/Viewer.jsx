@@ -7,17 +7,24 @@ const server_url = "http://localhost:3001/watcher";
 const Viewer = () => {
   const viewerVideo = useRef();
 
-  const createPeerViewer = async () => {
-    const peer = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: "stun:stun.stunprotocol.org",
-        },
-      ],
+  let peer;
+  const createPeerViewer = async (cb) => {
+    peer = new RTCPeerConnection();
+    console.log("Creating new Peer Connection.");
+
+    peer.addEventListener("signalingstatechange", (e) =>
+      console.log("Viewer SignalingState: ", peer.signalingState)
+    );
+
+    peer.addEventListener("connectionstatechange", (e) => {
+      if (peer.connectionState === "connected") cb();
+      console.log("Viewer ConnectionState: ", peer.connectionState);
     });
 
-    peer.onconnectionstatechange = (e) =>
-      console.log(`Viewer: ${peer.iceConnectionState}`);
+    peer.addEventListener("iceconnectionstatechange", (e) => {
+      if (peer.iceConnectionState === "connected") cb();
+      console.log(`Viewer IceConnectionState: ${peer.iceConnectionState}`);
+    });
 
     peer.ontrack = handleTrackEvent;
     peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
@@ -25,7 +32,7 @@ const Viewer = () => {
     return peer;
   };
 
-  const handleNegotiationNeededEvent = async (peer) => {
+  const handleNegotiationNeededEvent = async () => {
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
     const payload = {
@@ -35,22 +42,22 @@ const Viewer = () => {
     const { data } = await axios.post(server_url, payload);
     const desc = new RTCSessionDescription(data.sdp);
     peer.setRemoteDescription(desc).catch((e) => console.log(e));
-    // peer.onicecandidate = async (e) =>
-    //   await new RTCPeerConnection(data.peer).addIceCandidate(e.candidate);
   };
 
   const handleViewer = async () => {
-    const peer = await createPeerViewer();
-    peer.addTransceiver("video", { direction: "recvonly" });
+    // const peer = await createPeerViewer(() => {});
+    // peer.addTransceiver("video", { direction: "recvonly" });
+
+    const newIntervalId = setInterval(async () => {
+      await createPeerViewer(() => clearInterval(newIntervalId));
+      peer.addTransceiver("video", { direction: "recvonly" });
+    }, [1000]);
   };
 
   const handleTrackEvent = (e) => {
-    console.log(e.streams[0]);
     const video = document.getElementById("viewerVideo");
     video.srcObject = e.streams[0];
-    // video.play();
     video.addEventListener("loadedmetadata", () => {
-      console.log("loadedmetadata");
       video.play();
     });
   };
