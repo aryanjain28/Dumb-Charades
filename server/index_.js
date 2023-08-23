@@ -26,7 +26,11 @@ const io = new Server(server, {
   },
   wsEngine: require("ws").Server,
 });
+
+let stream;
 let peerRooms = {};
+let peer;
+let client_peer;
 
 // io.on("connection", (socket) => {
 //   socket.on("join_room", (data) => {
@@ -89,23 +93,52 @@ let peerRooms = {};
 
 // Streamer requests server's peer-id so that the streamer
 // can request a call.
-
-let stream;
+app.get("/peer", (req, res) => {
+  peer = new webrtc.RTCPeerConnection({
+    iceServers: [
+      {
+        urls: "stun:stun.stunprotocol.org",
+      },
+    ],
+  });
+  console.log("Created remote peer connection object peer");
+  res.json({ peer });
+});
 
 app.post("/streamer", async ({ body }, res) => {
-  const peer = new webrtc.RTCPeerConnection({
-    iceServers: [{ urls: "stun:stun.stunprotocol.org" }],
-  });
-  peer.ontrack = (e) => (stream = e.streams[0]);
-  const desc = new webrtc.RTCSessionDescription(body.sdp);
-  await peer.setRemoteDescription(desc);
+  client_peer = body.peer;
+  peer.addEventListener("icecandidate", (e) => onIceCandidate(e));
+  peer.addEventListener("iceconnectionstatechange", (e) =>
+    onIceStateChange(peer, e)
+  );
+  peer.addEventListener("track", handleTrackEvent);
 
-  // peer.onicecandidate = async (e) =>
-  //   await new RTCPeerConnection(body.peer).addIceCandidate(e.candidate);
+  // OFFER
+  console.log("Offer from client");
+  console.log("server setRemoteDescription start");
+  try {
+    await peer.setRemoteDescription(body.sdp);
+    console.log(`server_peer setRemoteDescription complete`);
+  } catch (error) {
+    console.log(
+      `server_peer Failed to set session description: ${error.toString()}`
+    );
+  }
 
-  const answer = await peer.createAnswer();
-  await peer.setLocalDescription(answer);
-  const payload = { sdp: peer.localDescription, peer };
+  console.log("server_peer createAnswer start");
+  try {
+    const answer = await peer.createAnswer();
+    console.log("server_peer setLocalDescription start");
+    try {
+      await peer.setLocalDescription(answer);
+      console.log(`server_peer setLocalDescription complete`);
+    } catch (error) {
+      console.log(`server_peer setLocalDescription failed`, error.soString());
+    }
+  } catch (error) {
+    console.log(`server_peer Failed to create answer: ${error.toString()}`);
+  }
+  const payload = { sdp: peer.localDescription };
   res.json(payload);
 });
 
@@ -119,14 +152,32 @@ app.use("/watcher", async ({ body }, res) => {
   });
   const desc = new webrtc.RTCSessionDescription(body.sdp);
   await peer.setRemoteDescription(desc);
-  // peer.onicecandidate = async (e) =>
-  //   await new RTCPeerConnection(body.peer).addIceCandidate(e.candidate);
-
   stream.getTracks().forEach((track) => peer.addTrack(track, stream));
   const answer = await peer.createAnswer();
   await peer.setLocalDescription(answer);
-  const payload = { sdp: peer.localDescription, peer };
+  const payload = { sdp: peer.localDescription };
   res.json(payload);
 });
+
+const onIceCandidate = async (e) => {
+  try {
+    await new client_peer.addIceCandidate(e.candidate);
+    console.log(`addIceCandidate success`);
+  } catch (error) {
+    console.log(`addIceCandidate failed`, error.toString());
+  }
+};
+
+const onIceStateChange = (p, event) => {
+  if (p) {
+    console.log(`ICE state: ${p.iceConnectionState}`);
+    console.log("ICE state change event: ", event);
+  }
+};
+
+const handleTrackEvent = (e) => {
+  stream = e.streams[0];
+  console.log("remote_server received stream");
+};
 
 server.listen(3001, () => console.log("Server Running @ 3001"));
