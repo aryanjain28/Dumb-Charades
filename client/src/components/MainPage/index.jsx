@@ -1,75 +1,51 @@
-import { Button, Grid, Snackbar } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ChatBox from "./ChatBox";
 import GuessString from "./GuessString";
 import VideoStreaming from "./VideoStream/index";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { Peer } from "peerjs";
-import axios from "axios";
 
-const socket = io.connect("http://localhost:3001");
-const myPeer = new Peer(undefined, {
-  host: "/",
-  port: 3009,
-  pingInterval: 100,
-});
+const GameArea = () => {
+  const socket = io.connect("http://localhost:3001");
 
-const GameArea = (props) => {
   const [searchParams] = useSearchParams();
   const [hostId, setHostId] = useState();
   const [isHost, setIsHost] = useState(false);
-  const [userId, setUserId] = useState();
+  const [userId, setUserId] = useState(null);
 
+  const roomId = searchParams.get("roomId");
   const navigate = useNavigate();
 
-  window.addEventListener("unload", (ev) => {
-    ev.preventDefault();
-    console.log("Unloading...");
-    socket.emit("leave_room", {
-      roomId: searchParams.get("roomId"),
-      destroyed_peer_id: myPeer.id,
-    });
-  });
-
-  window.addEventListener("beforeunload", (ev) => {
-    ev.preventDefault();
-    console.log("Before Unloading...");
-    socket.emit("leave_room", {
-      roomId: searchParams.get("roomId"),
-      destroyed_peer_id: myPeer.id,
-    });
-  });
+  useEffect(() => {
+    socket.connect();
+    window.addEventListener("beforeunload", userLeft);
+  }, []);
 
   useEffect(() => {
-    myPeer.on("open", async (userId) => {
-      socket.emit("join_room", {
-        roomId: searchParams.get("roomId"),
-        username: searchParams.get("user"),
-        userId,
-      });
-      setUserId(userId);
-      try {
-        const { hostId } = (
-          await axios.get(
-            `http://localhost:3001/getHost?roomId=${searchParams.get("roomId")}`
-          )
-        ).data;
-        setHostId(hostId);
-        setIsHost(hostId === userId);
-      } catch (error) {
-        console.log("Something went wroing!");
-      }
+    socket.on("connect", () => {
+      socket.emit("user_joining_room", { roomId, userId: socket.id });
+      setUserId(socket.id);
     });
-  }, [myPeer, myPeer.on]);
+  }, [socket.id]);
 
   useEffect(() => {
-    socket.on("host_changed", ({ hostId }) => {
-      console.log("Herere host change event: ", hostId);
-      setHostId(hostId);
-      setIsHost(hostId === myPeer.id);
+    socket.on("user_left", () => {
+      socket.disconnect();
     });
   }, [socket]);
+
+  useEffect(() => {
+    return () => {
+      userLeft();
+      window.removeEventListener("beforeunload", userLeft);
+    };
+  }, []);
+
+  const userLeft = () => {
+    socket.emit("user_leaving_room", { roomId, userId: socket.id });
+    socket.disconnect();
+  };
 
   return (
     <Grid
@@ -97,15 +73,18 @@ const GameArea = (props) => {
         justifyContent="start"
         gap={1}
       >
-        <GuessString text={`Host: ${isHost} ${searchParams.get("user")}`} />
-        <VideoStreaming />
+        <GuessString text={`Host: ${isHost} ${userId}`} />
+        <VideoStreaming isHost={isHost} />
       </Grid>
       <Grid item>
         <Button
           sx={{ textTransform: "none" }}
           variant="contained"
           color="error"
-          onClick={() => navigate("/")}
+          onClick={() => {
+            userLeft();
+            navigate("/");
+          }}
         >
           Exit
         </Button>

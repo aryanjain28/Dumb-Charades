@@ -1,12 +1,12 @@
 import { Box } from "@mui/material";
 import Viewer from "./Viewer";
 import Streamer from "./Streamer";
+import { useState } from "react";
 
-const VideoStream = () => {
+const VideoStream = ({ isHost }) => {
   return (
     <Box display="flex" alignItems="center" justifyContent="space-around">
-      <Streamer />
-      <Viewer />
+      {isHost ? <Streamer /> : <Viewer />}
     </Box>
   );
 };

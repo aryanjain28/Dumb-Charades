@@ -131,7 +131,7 @@ const ChatBox = (props) => {
         color="white"
         py={1}
       >
-        <Typography variant="h6">{`Room ID: ${roomId}`}</Typography>
+        <Typography sx={{ fontSize: 14 }}>{`${roomId}`}</Typography>
       </Box>
       <Box
         display="flex"

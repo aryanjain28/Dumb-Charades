@@ -27,61 +27,116 @@ const io = new Server(server, {
   },
   wsEngine: require("ws").Server,
 });
+
 let peerRooms = {};
 
-// io.on("connection", (socket) => {
-//   socket.on("join_room", (data) => {
-//     const { roomId, userId } = data;
-//     // new room: create host
-//     if (!(roomId in peerRooms)) {
-//       peerRooms[roomId] = {
-//         hostId: userId,
-//         myPeerId: userId,
-//         peersList: new Set(),
-//       };
-//     }
-//     const peerRoom = peerRooms[roomId];
+io.of("/").adapter.on("create-room", (room) => {
+  // console.log(`CREATE: ${room}`);
+});
 
-//     peerRoom.peersList.add(userId);
+io.of("/").adapter.on("delete-room", (room) => {
+  // console.log(`DEL: ${room}`);
+});
 
-//     socket.join(roomId);
-//     socket.to(roomId).emit("joined_room", {
-//       ...data,
-//       hostId: peerRoom.hostId,
-//       isHost: peerRoom.hostId === userId,
-//     });
-//     console.log(
-//       `Joining. Room: ${roomId} - Peer Count: ${peerRoom.peersList.size}`
-//     );
-//   });
+io.of("/").adapter.on("join-room", (room, id) => {
+  // console.log(`JOIN: ${room} ${id}`);
+});
 
-//   socket.on("leave_room", ({ roomId, destroyed_peer_id }) => {
-//     const peerRoom = peerRooms[roomId];
+io.of("/").adapter.on("leave-room", (room, id) => {
+  // console.log(`LEFT: ${room} ${id}`);
+});
 
-//     if (!peerRoom) return;
+io.on("connection", (socket) => {
+  socket.on("user_joining_room", ({ roomId, userId }) => {
+    socket.join(roomId);
+    console.log("Joined: ", roomId, socket.rooms);
 
-//     peerRoom.peersList.delete(destroyed_peer_id);
+    socket.to(roomId).emit("user_joined", { userId });
+  });
 
-//     if (destroyed_peer_id === peerRoom.hostId) {
-//       peerRoom.hostId = peerRoom.peersList.values().next().value;
-//       socket.to(roomId).emit("host_changed", { hostId: peerRoom.hostId });
-//       console.log(`Host Left... New Host: ${peerRoom.hostId}`);
-//     }
-//     console.log(
-//       `Leaving. Room: ${roomId} - Peer Count: ${peerRoom.peersList.size}`
-//     );
-//   });
+  socket.on("user_leaving_room", ({ roomId, userId }) => {
+    console.log("ROOM: ", roomId);
+    socket.leave(roomId);
+    socket.leave(userId);
+    Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
+    socket.rooms = new Set();
+    console.log("Left: ", Array.from(socket.rooms));
 
-//   socket.on("change_host", ({ roomId, userId }) => {
-//     const peerRoom = peerRooms[roomId];
-//     peerRoom.hostId = userId;
-//     socket.to(roomId).emit("host_changed", { hostId: peerRoom.hostId });
-//   });
+    socket.emit("user_left");
+  });
 
-//   socket.on("send_message", (data) => {
-//     socket.to(data.roomId).emit("receive_message", data);
-//   });
-// });
+  socket.on("disconnect", () => {
+    console.log("Disconnect: ", io.sockets.adapter.rooms[socket.id]);
+    Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
+    delete io.sockets.adapter.rooms[socket.id];
+  });
+
+  // socket.on("user_joining_room", ({ roomId, userId }) => {
+  //   console.log(`user_joining_room room:${roomId} user:${userId}`);
+  //   // new room: create host
+  //   if (!(roomId in peerRooms)) {
+  //     peerRooms[roomId] = {
+  //       hostId: userId,
+  //       peersList: new Set(),
+  //     };
+  //   }
+
+  //   const peerRoom = peerRooms[roomId];
+  //   peerRoom.peersList.add(userId);
+
+  //   // socket.join(roomId);
+  //   socket.emit("user_joined_room", {
+  //     roomId,
+  //     userId,
+  //     hostId: peerRoom.hostId,
+  //     isHost: peerRoom.hostId === userId,
+  //   });
+
+  //   // console.log(`${userId} Joined - Peer Count: ${peerRoom.peersList.size}`);
+  //   // console.log("Join");
+  //   console.log(peerRooms);
+  // });
+
+  // socket.on("user_leaving_room", ({ roomId, userId }) => {
+  //   console.log(`user_leaving_room | removing: ${userId}`);
+  //   if (roomId) {
+  //     const peerRoom = peerRooms[roomId];
+  //     peerRoom?.peersList.delete(userId);
+  //     if (peerRoom?.peersList.size === 0) delete peerRooms[roomId];
+  //     socket.leave(roomId);
+  //     socket.leave(userId);
+  //     socket.disconnect(true);
+  //   }
+  //   console.log(peerRooms);
+  // });
+
+  // socket.on("leave_room", ({ roomId, destroyed_peer_id }) => {
+  //   const peerRoom = peerRooms[roomId];
+
+  //   if (!peerRoom) return;
+
+  //   peerRoom.peersList.delete(destroyed_peer_id);
+
+  //   if (destroyed_peer_id === peerRoom.hostId) {
+  //     peerRoom.hostId = peerRoom.peersList.values().next().value;
+  //     socket.to(roomId).emit("host_changed", { hostId: peerRoom.hostId });
+  //     console.log(`Host Left... New Host: ${peerRoom.hostId}`);
+  //   }
+  //   console.log(
+  //     `Leaving. Room: ${roomId} - Peer Count: ${peerRoom.peersList.size}`
+  //   );
+  // });
+
+  // socket.on("change_host", ({ roomId, userId }) => {
+  //   const peerRoom = peerRooms[roomId];
+  //   peerRoom.hostId = userId;
+  //   socket.to(roomId).emit("host_changed", { hostId: peerRoom.hostId });
+  // });
+
+  // socket.on("send_message", (data) => {
+  //   socket.to(data.roomId).emit("receive_message", data);
+  // });
+});
 
 // app.use("/getHost", (req, res) => {
 //   const { roomId } = req.query;
