@@ -49,26 +49,22 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 io.on("connection", (socket) => {
   socket.on("user_joining_room", ({ roomId, userId }) => {
     socket.join(roomId);
-    console.log("Joined: ", roomId, socket.rooms);
-
     socket.to(roomId).emit("user_joined", { userId });
+    console.log("Join::Count:", io.sockets.adapter.rooms.get(roomId).size);
   });
 
   socket.on("user_leaving_room", ({ roomId, userId }) => {
-    console.log("ROOM: ", roomId);
     socket.leave(roomId);
     socket.leave(userId);
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
-    socket.rooms = new Set();
-    console.log("Left: ", Array.from(socket.rooms));
-
     socket.emit("user_left");
+    console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId).size);
   });
 
   socket.on("disconnect", () => {
-    console.log("Disconnect: ", io.sockets.adapter.rooms[socket.id]);
+    // console.log("Disconnect: ", socket.id, io.sockets.adapter.rooms[socket.id]);
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
-    delete io.sockets.adapter.rooms[socket.id];
+    // console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId).size);
   });
 
   // socket.on("user_joining_room", ({ roomId, userId }) => {
