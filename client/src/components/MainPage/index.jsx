@@ -83,7 +83,7 @@ const GameArea = () => {
         gap={1}
       >
         <GuessString text={`Host: ${isHost} ${userId}`} />
-        <VideoStreaming isHost={false} />
+        <VideoStreaming isHost={isHost} />
       </Grid>
       <Grid item>
         <Button

@@ -88,8 +88,8 @@ io.on("connection", (socket) => {
 
     const newHost = nonHosts[Math.floor(Math.random() * nonHosts.length)];
 
-    newHost.isHost = true;
-    currHost.isHost = false;
+    newHost && (newHost.isHost = true);
+    currHost && (currHost.isHost = false);
 
     socket.to(roomId).emit("host_changed", { hostId: newHost.id });
   };
