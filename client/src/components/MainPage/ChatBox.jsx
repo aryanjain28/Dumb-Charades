@@ -82,20 +82,15 @@ const Chat = ({ value, username, dateTime }) => {
 };
 
 const ChatBox = (props) => {
-  const [message, setMessage] = useState("");
-  const [chats, setChats] = useState([]);
   const { socket, roomId, username } = props;
 
-  useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setChats((c) => [...c, data]);
-    });
+  const [message, setMessage] = useState("");
+  const [chats, setChats] = useState([]);
 
-    // desctuctor
-    return () => {
-      socket.off("receive_message");
-    };
-  }, [socket]);
+  socket.on("receive_message", (data) => {
+    if (data.userId === socket.id) return;
+    setChats((c) => [...c, data]);
+  });
 
   const sendMessage = async () => {
     const date = new Date(Date.now());
@@ -105,9 +100,8 @@ const ChatBox = (props) => {
       (date.getMinutes() < 10 ? "0" : "") +
       date.getMinutes();
 
-    const data = { message, username, dateTime, roomId };
-    await socket.emit("send_message", data);
-    setChats((c) => [...c, { message, roomId, dateTime, username: "You" }]);
+    const data = { userId: socket.id, message, username, dateTime, roomId };
+    socket.emit("send_message", data);
   };
 
   return (
@@ -142,8 +136,13 @@ const ChatBox = (props) => {
         height="100%"
         width="100%"
       >
-        {chats.map(({ message, username, dateTime }) => (
-          <Chat value={message} username={username} dateTime={dateTime} />
+        {chats.map(({ message, username, dateTime }, i) => (
+          <Chat
+            key={i}
+            value={message}
+            username={username}
+            dateTime={dateTime}
+          />
         ))}
       </Box>
       <Box display="flex" width={1} gap={1}>

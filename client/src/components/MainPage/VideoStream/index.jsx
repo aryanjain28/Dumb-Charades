@@ -5,6 +5,9 @@ import { useState } from "react";
 
 const VideoStream = ({ hostId, isHost }) => {
   console.log(hostId, isHost);
+
+  return <></>;
+
   return (
     <>
       {hostId === null ? (

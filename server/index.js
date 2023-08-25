@@ -51,12 +51,11 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     const roomSize = io.sockets.adapter.rooms.get(roomId)?.size;
     socket.isHost = socket.isHost || roomSize === 1;
-    socket.emit("user_joined", { userId, isHost: socket.isHost });
+    socket.to(roomId).emit("user_joined", { userId, isHost: socket.isHost });
     console.log("Join::Count:", roomSize, socket.isHost);
   });
 
   socket.on("user_leaving_room", ({ roomId, userId }) => {
-    console.log("Leaving");
     if (socket.isHost) {
       console.log("Host Left. Changing Host");
       findAndSetNewHost(roomId);
@@ -67,12 +66,16 @@ io.on("connection", (socket) => {
 
     console.log("socket.isHost: ", socket.isHost);
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
-    socket.emit("user_left");
+    io.to(roomId).emit("user_left");
     console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId)?.size);
   });
 
   socket.on("change_host", ({ roomId }) => {
     findAndSetNewHost(roomId);
+  });
+
+  socket.on("send_message", (data) => {
+    io.to(data.roomId).emit("receive_message", data);
   });
 
   socket.on("disconnect", () => {
@@ -96,81 +99,7 @@ io.on("connection", (socket) => {
 
     socket.to(roomId).emit("host_changed", { hostId: newHost.id });
   };
-
-  // socket.on("user_joining_room", ({ roomId, userId }) => {
-  //   console.log(`user_joining_room room:${roomId} user:${userId}`);
-  //   // new room: create host
-  //   if (!(roomId in peerRooms)) {
-  //     peerRooms[roomId] = {
-  //       hostId: userId,
-  //       peersList: new Set(),
-  //     };
-  //   }
-
-  //   const peerRoom = peerRooms[roomId];
-  //   peerRoom.peersList.add(userId);
-
-  //   // socket.join(roomId);
-  //   socket.emit("user_joined_room", {
-  //     roomId,
-  //     userId,
-  //     hostId: peerRoom.hostId,
-  //     isHost: peerRoom.hostId === userId,
-  //   });
-
-  //   // console.log(`${userId} Joined - Peer Count: ${peerRoom.peersList.size}`);
-  //   // console.log("Join");
-  //   console.log(peerRooms);
-  // });
-
-  // socket.on("user_leaving_room", ({ roomId, userId }) => {
-  //   console.log(`user_leaving_room | removing: ${userId}`);
-  //   if (roomId) {
-  //     const peerRoom = peerRooms[roomId];
-  //     peerRoom?.peersList.delete(userId);
-  //     if (peerRoom?.peersList.size === 0) delete peerRooms[roomId];
-  //     socket.leave(roomId);
-  //     socket.leave(userId);
-  //     socket.disconnect(true);
-  //   }
-  //   console.log(peerRooms);
-  // });
-
-  // socket.on("leave_room", ({ roomId, destroyed_peer_id }) => {
-  //   const peerRoom = peerRooms[roomId];
-
-  //   if (!peerRoom) return;
-
-  //   peerRoom.peersList.delete(destroyed_peer_id);
-
-  //   if (destroyed_peer_id === peerRoom.hostId) {
-  //     peerRoom.hostId = peerRoom.peersList.values().next().value;
-  //     socket.to(roomId).emit("host_changed", { hostId: peerRoom.hostId });
-  //     console.log(`Host Left... New Host: ${peerRoom.hostId}`);
-  //   }
-  //   console.log(
-  //     `Leaving. Room: ${roomId} - Peer Count: ${peerRoom.peersList.size}`
-  //   );
-  // });
-
-  // socket.on("change_host", ({ roomId, userId }) => {
-  //   const peerRoom = peerRooms[roomId];
-  //   peerRoom.hostId = userId;
-  //   socket.to(roomId).emit("host_changed", { hostId: peerRoom.hostId });
-  // });
-
-  // socket.on("send_message", (data) => {
-  //   socket.to(data.roomId).emit("receive_message", data);
-  // });
 });
-
-// app.use("/getHost", (req, res) => {
-//   const { roomId } = req.query;
-//   res.json({ hostId: peerRooms[roomId].hostId });
-// });
-
-// Streamer requests server's peer-id so that the streamer
-// can request a call.
 
 let stream;
 
