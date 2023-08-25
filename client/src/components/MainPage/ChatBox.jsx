@@ -54,7 +54,7 @@ const chats = [
   "exapmle",
 ];
 
-const Chat = ({ value, username, dateTime }) => {
+const Chat = ({ value, name, dateTime }) => {
   return (
     <Box
       m={1}
@@ -75,14 +75,14 @@ const Chat = ({ value, username, dateTime }) => {
         gap={2}
       >
         <Typography variant="caption">{dateTime}</Typography>
-        <Typography variant="caption">{username}</Typography>
+        <Typography variant="caption">{name}</Typography>
       </Box>
     </Box>
   );
 };
 
 const ChatBox = (props) => {
-  const { socket, roomId, username } = props;
+  const { socket, name, roomId } = props;
 
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
@@ -100,7 +100,13 @@ const ChatBox = (props) => {
       (date.getMinutes() < 10 ? "0" : "") +
       date.getMinutes();
 
-    const data = { userId: socket.id, message, username, dateTime, roomId };
+    const data = {
+      userId: socket.id,
+      message,
+      name: name,
+      dateTime,
+      roomId,
+    };
     socket.emit("send_message", data);
   };
 
@@ -136,13 +142,8 @@ const ChatBox = (props) => {
         height="100%"
         width="100%"
       >
-        {chats.map(({ message, username, dateTime }, i) => (
-          <Chat
-            key={i}
-            value={message}
-            username={username}
-            dateTime={dateTime}
-          />
+        {chats.map(({ message, name, dateTime }, i) => (
+          <Chat key={i} value={message} name={name} dateTime={dateTime} />
         ))}
       </Box>
       <Box display="flex" width={1} gap={1}>

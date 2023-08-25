@@ -28,7 +28,7 @@ const JoinRoom = () => {
       <Button
         sx={{ width: "30%", textTransform: "none" }}
         variant="contained"
-        onClick={() => navigate(`game?roomId=${roomId}`)}
+        onClick={() => navigate(`game?roomId=${roomId}&name=${generateName()}`)}
         disabled={!roomId}
       >
         Join Room
@@ -52,7 +52,7 @@ const CreateRoom = () => {
         sx={{ textTransform: "none", width: "65%" }}
         variant="contained"
         color="success"
-        onClick={() => navigate(`game?roomId=${uuid()}`)}
+        onClick={() => navigate(`game?roomId=${uuid()}&name=${generateName()}`)}
       >
         Create New Room
       </Button>
@@ -88,3 +88,16 @@ const Room = () => {
 };
 
 export default Room;
+
+const generateName = () => {
+  const length = Math.floor(Math.random() * 3 + 4);
+  let result = "";
+  const characters = "abcdefghijklmnopqrstuvwxyz";
+  const charactersLength = characters.length;
+  let counter = 0;
+  while (counter < length) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
+};

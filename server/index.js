@@ -47,11 +47,16 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 });
 
 io.on("connection", (socket) => {
-  socket.on("user_joining_room", ({ roomId, userId }) => {
+  socket.on("user_joining_room", ({ name, roomId, userId }) => {
     socket.join(roomId);
     const roomSize = io.sockets.adapter.rooms.get(roomId)?.size;
     socket.isHost = socket.isHost || roomSize === 1;
-    socket.to(roomId).emit("user_joined", { userId, isHost: socket.isHost });
+    socket.name = name;
+    io.to(roomId).emit("user_joined", {
+      name: socket.name,
+      userId,
+      isHost: socket.isHost,
+    });
     console.log("Join::Count:", roomSize, socket.isHost);
   });
 

@@ -5,6 +5,7 @@ import GuessString from "./GuessString";
 import VideoStreaming from "./VideoStream/index";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
+import axios from "axios";
 
 const GameArea = () => {
   const socket = io.connect("http://localhost:3001");
@@ -12,6 +13,7 @@ const GameArea = () => {
   const [searchParams] = useSearchParams();
   const [isHost, setIsHost] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState(null);
 
   const roomId = searchParams.get("roomId");
   const navigate = useNavigate();
@@ -22,15 +24,20 @@ const GameArea = () => {
   }, []);
 
   useEffect(() => {
-    socket.on("connect", () => {
-      socket.emit("user_joining_room", { roomId, userId: socket.id });
+    socket.on("connect", async () => {
+      socket.emit("user_joining_room", {
+        name: searchParams.get("name"),
+        roomId,
+        userId: socket.id,
+      });
       setUserId(socket.id);
     });
   }, [socket.id]);
 
-  socket.on("user_joined", ({ isHost }) => {
-    console.log("JOINED: ", isHost);
+  socket.on("user_joined", ({ name, isHost }) => {
+    console.log("JOINED: ", name, isHost);
     setIsHost(isHost);
+    setUsername(name);
   });
 
   socket.on("host_changed", ({ hostId }) => {
@@ -68,7 +75,7 @@ const GameArea = () => {
           <ChatBox
             socket={socket}
             roomId={searchParams.get("roomId")}
-            username={searchParams.get("user")}
+            name={searchParams.get("name")}
           />
         )}
       </Grid>
@@ -82,7 +89,7 @@ const GameArea = () => {
         justifyContent="start"
         gap={1}
       >
-        <GuessString text={`Host: ${isHost} ${userId}`} />
+        <GuessString text={`Host: ${isHost} ${userId} `} />
         {userId !== null && <VideoStreaming hostId={userId} isHost={isHost} />}
       </Grid>
       <Grid item>

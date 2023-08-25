@@ -75,7 +75,10 @@ const Viewer = () => {
   };
 
   const handleTrackEvent = (e) => {
-    const video = document.getElementById("viewerVideo");
+    if (!e.streams) return;
+
+    const video = viewerVideo.current;
+    console.log(video);
     video.srcObject = e.streams[0];
     video.addEventListener("loadedmetadata", () => {
       video.play();
