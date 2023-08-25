@@ -10,7 +10,6 @@ const GameArea = () => {
   const socket = io.connect("http://localhost:3001");
 
   const [searchParams] = useSearchParams();
-  const [hostId, setHostId] = useState();
   const [isHost, setIsHost] = useState(false);
   const [userId, setUserId] = useState(null);
 
@@ -28,6 +27,16 @@ const GameArea = () => {
       setUserId(socket.id);
     });
   }, [socket.id]);
+
+  socket.on("user_joined", ({ isHost }) => {
+    console.log("JOINED: ", isHost);
+    setIsHost(isHost);
+  });
+
+  socket.on("host_changed", ({ hostId }) => {
+    console.log("Host-Changed: ", hostId, socket.id);
+    setIsHost(hostId === socket.id);
+  });
 
   useEffect(() => {
     socket.on("user_left", () => {
@@ -74,7 +83,7 @@ const GameArea = () => {
         gap={1}
       >
         <GuessString text={`Host: ${isHost} ${userId}`} />
-        <VideoStreaming isHost={isHost} />
+        <VideoStreaming isHost={false} />
       </Grid>
       <Grid item>
         <Button

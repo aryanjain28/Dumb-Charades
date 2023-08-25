@@ -49,23 +49,50 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 io.on("connection", (socket) => {
   socket.on("user_joining_room", ({ roomId, userId }) => {
     socket.join(roomId);
-    socket.to(roomId).emit("user_joined", { userId });
-    console.log("Join::Count:", io.sockets.adapter.rooms.get(roomId).size);
+    const roomSize = io.sockets.adapter.rooms.get(roomId)?.size;
+    socket.isHost = socket.isHost || roomSize === 1;
+    socket.emit("user_joined", { userId, isHost: socket.isHost });
+    console.log("Join::Count:", roomSize, socket.isHost);
   });
 
   socket.on("user_leaving_room", ({ roomId, userId }) => {
-    socket.leave(roomId);
-    socket.leave(userId);
+    console.log("Leaving");
+    if (socket.isHost) {
+      console.log("Host Left. Changing Host");
+      findAndSetNewHost(roomId);
+    }
+
+    socket.leave(roomId); // just to be safer!
+    socket.leave(userId); // just to be safer!
+
+    console.log("socket.isHost: ", socket.isHost);
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
     socket.emit("user_left");
-    console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId).size);
+    console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId)?.size);
+  });
+
+  socket.on("change_host", ({ roomId }) => {
+    findAndSetNewHost(roomId);
   });
 
   socket.on("disconnect", () => {
-    // console.log("Disconnect: ", socket.id, io.sockets.adapter.rooms[socket.id]);
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
-    // console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId).size);
   });
+
+  const findAndSetNewHost = (roomId) => {
+    const sids = io.sockets.adapter.rooms.get(roomId);
+    const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
+    const currHost = sockets.find(({ isHost }) => isHost);
+    const nonHosts = sockets.filter(({ isHost }) => !isHost);
+    if (!nonHosts) return;
+
+    const newHost = nonHosts[Math.floor(Math.random() * nonHosts.length)];
+
+    newHost.isHost = true;
+    currHost.isHost = false;
+
+    socket.to(roomId).emit("host_changed", { hostId: newHost.id });
+  };
 
   // socket.on("user_joining_room", ({ roomId, userId }) => {
   //   console.log(`user_joining_room room:${roomId} user:${userId}`);
