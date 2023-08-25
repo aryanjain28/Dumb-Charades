@@ -1,4 +1,11 @@
-import { Button, CircularProgress, Grid, Snackbar } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  Snackbar,
+  Typography,
+} from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -9,6 +16,10 @@ const Streamer = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connected, setIsConnected] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
+
+  useEffect(() => {
+    handleStreamingStart();
+  }, []);
 
   let peer;
   const createPeerStreamer = (cb) => {
@@ -68,30 +79,49 @@ const Streamer = () => {
   };
 
   return (
-    <div>
+    <Box
+      width="90%"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      boxShadow={5}
+    >
       <video
         id="streamerVideo"
         playsInline
         muted
         ref={streamerVideo}
         autoPlay
-        style={{ border: "1px red solid", width: "100%" }}
+        style={{ width: "100%" }}
       />
 
-      <Button
-        endIcon={isConnecting && <CircularProgress color="error" size={18} />}
-        mx={1}
-        variant="outlined"
-        onClick={
-          connected || isConnecting ? handleStreamingStop : handleStreamingStart
-        }
-        color={connected || isConnecting ? "error" : "primary"}
-      >
-        {connected || isConnecting
-          ? `Stop ${connected ? "Stream" : ""}`
-          : "Stream"}
-      </Button>
-    </div>
+      {
+        isConnecting && (
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <Typography variant="h6" color="navy" fontSize={15}>
+              Connecting...
+              <CircularProgress sx={{ color: "navy" }} size={12} />
+            </Typography>
+          </Box>
+        )
+
+        // : (
+        //   connected ||
+        //   (true && (
+        //     <Button
+        //       mx={1}
+        //       variant="outlined"
+        //       onClick={handleStreamingStart}
+        //       color={"error"}
+        //       sx={{ textTransform: "none" }}
+        //     >
+        //       Stop Streaming
+        //     </Button>
+        //   ))
+        // )
+      }
+    </Box>
   );
 };
 

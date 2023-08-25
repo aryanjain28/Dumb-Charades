@@ -81,12 +81,15 @@ io.on("connection", (socket) => {
 
   const findAndSetNewHost = (roomId) => {
     const sids = io.sockets.adapter.rooms.get(roomId);
+    if (sids.size === 0) return;
+
     const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
     const currHost = sockets.find(({ isHost }) => isHost);
     const nonHosts = sockets.filter(({ isHost }) => !isHost);
     if (!nonHosts) return;
 
     const newHost = nonHosts[Math.floor(Math.random() * nonHosts.length)];
+    if (!newHost) return;
 
     newHost && (newHost.isHost = true);
     currHost && (currHost.isHost = false);
@@ -193,7 +196,8 @@ app.use("/watcher", async ({ body }, res) => {
   // peer.onicecandidate = async (e) =>
   //   await new RTCPeerConnection(body.peer).addIceCandidate(e.candidate);
 
-  stream.getTracks().forEach((track) => peer.addTrack(track, stream));
+  if (stream)
+    stream.getTracks().forEach((track) => peer.addTrack(track, stream));
   const answer = await peer.createAnswer();
   await peer.setLocalDescription(answer);
   const payload = { sdp: peer.localDescription, peer };

@@ -10,7 +10,7 @@ const GameArea = () => {
   const socket = io.connect("http://localhost:3001");
 
   const [searchParams] = useSearchParams();
-  const [isHost, setIsHost] = useState(false);
+  const [isHost, setIsHost] = useState(null);
   const [userId, setUserId] = useState(null);
 
   const roomId = searchParams.get("roomId");
@@ -83,7 +83,7 @@ const GameArea = () => {
         gap={1}
       >
         <GuessString text={`Host: ${isHost} ${userId}`} />
-        <VideoStreaming isHost={isHost} />
+        {userId !== null && <VideoStreaming hostId={userId} isHost={isHost} />}
       </Grid>
       <Grid item>
         <Button

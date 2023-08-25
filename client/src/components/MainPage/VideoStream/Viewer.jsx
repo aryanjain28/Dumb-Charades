@@ -1,11 +1,15 @@
-import { Button, CircularProgress } from "@mui/material";
-import { useRef, useState } from "react";
+import { Box, Typography, CircularProgress } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const server_url = "http://localhost:3001/watcher";
 
 const Viewer = () => {
   const viewerVideo = useRef();
+
+  useEffect(() => {
+    handleViewerStreamingStart();
+  }, []);
 
   const [connected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -79,31 +83,31 @@ const Viewer = () => {
   };
 
   return (
-    <div>
+    <Box
+      width="90%"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      boxShadow={5}
+    >
       <video
         id="viewerVideo"
         playsInline
         muted
         autoPlay
         ref={viewerVideo}
-        style={{ border: "1px red solid", width: "100%" }}
+        style={{ width: "100%" }}
       />
-      <Button
-        endIcon={isConnecting && <CircularProgress color="error" size={18} />}
-        mx={1}
-        variant="outlined"
-        onClick={
-          connected || isConnecting
-            ? handleViewerStreamingStop
-            : handleViewerStreamingStart
-        }
-        color={connected || isConnecting ? "error" : "primary"}
-      >
-        {connected || isConnecting
-          ? `Stop ${connected ? "Stream" : ""}`
-          : "View Stream"}
-      </Button>
-    </div>
+      {isConnecting && (
+        <Box display="flex" alignItems="center" justifyContent="center">
+          <Typography variant="h6" color="navy" fontSize={15}>
+            Connecting...
+            <CircularProgress sx={{ color: "navy" }} size={12} />
+          </Typography>
+        </Box>
+      )}
+    </Box>
   );
 };
 
