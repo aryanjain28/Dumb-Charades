@@ -60,6 +60,7 @@ io.on("connection", (socket) => {
 
     socket.name = name;
     io.to(roomId).emit("user_joined", { name: socket.name, userId });
+    io.to(roomId).emit("room_updated", { names: getUsers(roomId) });
     console.log("Join::Count:", roomSize);
   });
 
@@ -75,6 +76,7 @@ io.on("connection", (socket) => {
     console.log("socket.isHost: ", socket.isHost);
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
     io.to(roomId).emit("user_left");
+    io.to(roomId).emit("room_updated", { names: getUsers(roomId) });
     console.log("Left::Count:", io.sockets.adapter.rooms.get(roomId)?.size);
   });
 
@@ -106,6 +108,15 @@ io.on("connection", (socket) => {
     currHost && (currHost.isHost = false);
 
     io.to(roomId).emit("host_changed", { hostId: newHost.id });
+  };
+
+  const getUsers = (roomId) => {
+    const sids = io.sockets.adapter.rooms.get(roomId);
+    if (sids.size === 0) return [];
+    const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
+    const names = sockets?.map(({ name }) => name);
+    console.log(names);
+    return names;
   };
 });
 

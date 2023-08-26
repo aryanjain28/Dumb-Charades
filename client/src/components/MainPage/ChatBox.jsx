@@ -86,10 +86,16 @@ const ChatBox = (props) => {
 
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
+  const [users, setUsers] = useState([]);
 
   socket.on("receive_message", (data) => {
     if (data.userId === socket.id) return;
     setChats((c) => [...c, data]);
+  });
+
+  socket.on("room_updated", ({ names }) => {
+    console.log("HERER", names);
+    setUsers((u) => [...names]);
   });
 
   const sendMessage = async () => {
@@ -110,11 +116,13 @@ const ChatBox = (props) => {
     socket.emit("send_message", data);
   };
 
+  console.log(users);
+
   return (
     <Box
       display="flex"
       flexDirection="column"
-      alignItems="end"
+      alignItems="center"
       justifyContent="space-between"
       border="1px solid"
       borderRadius={2}
@@ -133,6 +141,33 @@ const ChatBox = (props) => {
       >
         <Typography sx={{ fontSize: 14 }}>{`${roomId}`}</Typography>
       </Box>
+      {users.length > 0 && (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="start"
+          borderRadius={2}
+          boxShadow={2}
+          sx={{ fontSize: 13, width: "90%", my: 1 }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              borderRadius: 1,
+              width: "90%",
+              background: "green",
+              zIndex: 0,
+            }}
+            color="white"
+          >
+            Online Members:
+          </Typography>
+          {users.map((name) => (
+            <Typography variant="caption">{name}</Typography>
+          ))}
+        </Box>
+      )}
       <Box
         display="flex"
         flexDirection="column"
