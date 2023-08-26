@@ -6,12 +6,11 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
-import { useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const server_url = "http://localhost:3001/streamer";
-const Streamer = () => {
+const Streamer = ({ socket, roomId }) => {
   const streamerVideo = useRef();
   const [isConnecting, setIsConnecting] = useState(false);
   const [connected, setIsConnected] = useState(false);
@@ -63,6 +62,7 @@ const Streamer = () => {
         setIsConnecting(false);
         clearInterval(newIntervalId);
         setIsConnected(true);
+        socket.emit("host_started_streaming", { roomId });
       });
       setIntervalId(newIntervalId);
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));

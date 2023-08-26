@@ -59,7 +59,11 @@ io.on("connection", (socket) => {
     }
 
     socket.name = name;
-    io.to(roomId).emit("user_joined", { name: socket.name, userId });
+    io.to(roomId).emit("user_joined", {
+      name: socket.name,
+      userId,
+      hostId: getHost(roomId).id,
+    });
     io.to(roomId).emit("room_updated", { names: getUsers(roomId) });
     console.log("Join::Count:", roomSize);
   });
@@ -82,6 +86,10 @@ io.on("connection", (socket) => {
 
   socket.on("change_host", ({ roomId }) => {
     findAndSetNewHost(roomId);
+  });
+
+  socket.on("host_started_streaming", ({ roomId }) => {
+    io.to(roomId).emit("host_streaming");
   });
 
   socket.on("send_message", (data) => {
@@ -110,9 +118,17 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("host_changed", { hostId: newHost.id });
   };
 
+  const getHost = (roomId) => {
+    const sids = io.sockets.adapter.rooms.get(roomId);
+    if (sids.size === 0) return null;
+
+    const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
+    return sockets.find(({ isHost }) => isHost);
+  };
+
   const getUsers = (roomId) => {
     const sids = io.sockets.adapter.rooms.get(roomId);
-    if (sids.size === 0) return [];
+    if (!sids || sids.size === 0) return [];
     const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
     const names = sockets?.map(({ name }) => name);
     return names;

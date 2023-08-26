@@ -1,19 +1,18 @@
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import Viewer from "./Viewer";
 import Streamer from "./Streamer";
-import { useState } from "react";
 
-const VideoStream = ({ hostId, isHost }) => {
-  return <></>;
+const VideoStream = ({ socket, hostId, isHost, roomId }) => {
+  console.log(isHost, hostId, roomId);
 
   return (
     <>
       {isHost === null ? (
         <>Connecting...</>
       ) : isHost ? (
-        <Streamer />
+        <Streamer socket={socket} roomId={roomId} />
       ) : (
-        <Viewer />
+        <Viewer socket={socket} roomId={roomId} />
       )}
 
       {isHost !== null && (

@@ -94,7 +94,6 @@ const ChatBox = (props) => {
   });
 
   socket.on("room_updated", ({ names }) => {
-    console.log("HERER", names);
     setUsers((u) => [...names]);
   });
 
@@ -115,8 +114,6 @@ const ChatBox = (props) => {
     };
     socket.emit("send_message", data);
   };
-
-  console.log(users);
 
   return (
     <Box
@@ -177,7 +174,6 @@ const ChatBox = (props) => {
         overflow="scroll"
         height="100%"
         width="100%"
-        border="1px red solid"
       >
         {chats.map(({ message, name, dateTime }, i) => (
           <Chat key={i} value={message} name={name} dateTime={dateTime} />

@@ -4,12 +4,17 @@ import axios from "axios";
 
 const server_url = "http://localhost:3001/watcher";
 
-const Viewer = () => {
+const Viewer = ({ socket, roomId }) => {
   const viewerVideo = useRef();
 
   useEffect(() => {
     handleViewerStreamingStart();
   }, []);
+
+  socket.on("host_streaming", () => {
+    console.log("Restarting Viewer Peer Connection");
+    handleViewerStreamingStart();
+  });
 
   const [connected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -78,7 +83,6 @@ const Viewer = () => {
     if (!e.streams) return;
 
     const video = viewerVideo.current;
-    console.log(video);
     video.srcObject = e.streams[0];
     video.addEventListener("loadedmetadata", () => {
       video.play();

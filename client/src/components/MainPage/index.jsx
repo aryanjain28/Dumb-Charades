@@ -38,14 +38,15 @@ const GameArea = () => {
         userId: socket.id,
       });
       setUserId(socket.id);
-      setIsHost(false);
+      // setIsHost(false);
     });
   }, [socket.id]);
 
-  socket.on("user_joined", ({ name, isHost, userId: newUserId }) => {
+  socket.on("user_joined", ({ name, userId: newUserId, hostId }) => {
     if (newUserId !== socket.id) {
       toast.success(`New User Joined ${name}`);
     }
+    setIsHost(hostId === socket.id);
   });
 
   socket.on("disconnect", () => {
@@ -95,7 +96,9 @@ const GameArea = () => {
         gap={1}
       >
         <GuessString text={`Host: ${isHost} ${userId} `} />
-        {userId !== null && <VideoStreaming hostId={userId} isHost={isHost} />}
+        {userId !== null && (
+          <VideoStreaming socket={socket} hostId={userId} isHost={isHost} />
+        )}
       </Grid>
       <Grid item>
         <Button
