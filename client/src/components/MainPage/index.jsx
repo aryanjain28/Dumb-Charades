@@ -6,6 +6,7 @@ import VideoStreaming from "./VideoStream/index";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const GameArea = () => {
   const socket = io.connect("http://localhost:3001");
@@ -13,10 +14,14 @@ const GameArea = () => {
   const [searchParams] = useSearchParams();
   const [isHost, setIsHost] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [username, setUsername] = useState(null);
+  const [movie, setMovie] = useState("");
 
   const roomId = searchParams.get("roomId");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isHost) getMovie();
+  }, [isHost]);
 
   useEffect(() => {
     socket.connect();
@@ -69,6 +74,14 @@ const GameArea = () => {
     socket.emit("user_leaving_room", { roomId, userId: socket.id });
   };
 
+  const getMovie = async () => {
+    const page = Math.floor(Math.random() * 201);
+    const url = `https://api.themoviedb.org/3/discover/movie?api_key=4b470fed996e4925f1f6757cda528d08&sort_by=popularity.desc&page=${page}&with_original_language=en`;
+    const { results } = (await axios.get(url)).data;
+    const movie = results[Math.floor(Math.random() * results.length)];
+    setMovie(movie.original_title);
+  };
+
   return (
     <Grid
       container
@@ -83,6 +96,7 @@ const GameArea = () => {
             roomId={searchParams.get("roomId")}
             name={searchParams.get("name")}
             isHost={isHost}
+            movie={movie}
           />
         )}
       </Grid>
@@ -96,7 +110,7 @@ const GameArea = () => {
         justifyContent="start"
         gap={1}
       >
-        <GuessString isHost={isHost} />
+        {movie && <GuessString isHost={isHost} movie={movie} />}
         {userId !== null && (
           <VideoStreaming socket={socket} hostId={userId} isHost={isHost} />
         )}

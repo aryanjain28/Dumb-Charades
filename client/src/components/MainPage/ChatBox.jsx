@@ -1,18 +1,39 @@
-import { Box, Button, Dialog, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Box, TextField, Typography } from "@mui/material";
+import { useState } from "react";
+import s from "string-similarity";
 
-const Chat = ({ value, name, dateTime }) => {
+const Chat = ({ value, name, dateTime, movie }) => {
+  const percent = parseInt(s.compareTwoStrings(movie, value) * 100);
+
   return (
     <Box
       m={1}
       p={1}
+      position="relative"
       border="1px gray solid"
       borderRadius={1}
       display="flex"
       flexDirection="column"
       alignItems="end"
+      gap={1}
     >
-      {value && <Typography variant="body1">{value}</Typography>}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ width: "100%" }}
+        alignSelf="right"
+        gap={2}
+      >
+        <Typography
+          variant="caption"
+          sx={{ fontSize: 10, fontWeight: 800 }}
+          color={percent > 80 ? "green" : percent < 30 ? "orangered" : "orange"}
+        >
+          {`${percent}%`}
+        </Typography>
+        <Typography variant="body1">{value}</Typography>
+      </Box>
       <Box
         display="flex"
         alignItems="center"
@@ -29,7 +50,7 @@ const Chat = ({ value, name, dateTime }) => {
 };
 
 const ChatBox = (props) => {
-  const { socket, name, roomId, isHost } = props;
+  const { socket, name, roomId, isHost, movie } = props;
 
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
@@ -123,7 +144,13 @@ const ChatBox = (props) => {
         width="100%"
       >
         {chats.map(({ message, name, dateTime }, i) => (
-          <Chat key={i} value={message} name={name} dateTime={dateTime} />
+          <Chat
+            key={i}
+            value={message}
+            name={name}
+            dateTime={dateTime}
+            movie={movie}
+          />
         ))}
       </Box>
       <Box display="flex" width={1} gap={1}>
@@ -133,7 +160,7 @@ const ChatBox = (props) => {
           onChange={(e) => {
             setMessage(e.target.value);
           }}
-          disabled={isHost}
+          // disabled={isHost}
           value={message}
           onKeyUp={(e) => {
             if (e.key === "Enter" && message) {

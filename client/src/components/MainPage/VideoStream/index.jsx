@@ -4,7 +4,7 @@ import Streamer from "./Streamer";
 
 const VideoStream = ({ socket, hostId, isHost, roomId }) => {
   console.log(isHost, hostId, roomId);
-  // return <></>;
+  return <></>;
 
   return (
     <>
