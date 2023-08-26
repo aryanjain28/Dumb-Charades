@@ -50,14 +50,17 @@ io.on("connection", (socket) => {
   socket.on("user_joining_room", ({ name, roomId, userId }) => {
     socket.join(roomId);
     const roomSize = io.sockets.adapter.rooms.get(roomId)?.size;
-    socket.isHost = socket.isHost || roomSize === 1;
+
+    socket.isHost = false;
+    if (roomSize === 1) {
+      console.log("Setting this user as host");
+      findAndSetNewHost(roomId);
+      socket.isHost = true;
+    }
+
     socket.name = name;
-    io.to(roomId).emit("user_joined", {
-      name: socket.name,
-      userId,
-      isHost: socket.isHost,
-    });
-    console.log("Join::Count:", roomSize, socket.isHost);
+    io.to(roomId).emit("user_joined", { name: socket.name, userId });
+    console.log("Join::Count:", roomSize);
   });
 
   socket.on("user_leaving_room", ({ roomId, userId }) => {
@@ -102,7 +105,7 @@ io.on("connection", (socket) => {
     newHost && (newHost.isHost = true);
     currHost && (currHost.isHost = false);
 
-    socket.to(roomId).emit("host_changed", { hostId: newHost.id });
+    io.to(roomId).emit("host_changed", { hostId: newHost.id });
   };
 });
 

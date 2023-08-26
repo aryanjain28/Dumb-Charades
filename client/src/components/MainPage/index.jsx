@@ -24,6 +24,13 @@ const GameArea = () => {
   }, []);
 
   useEffect(() => {
+    return () => {
+      userLeft();
+      // window.removeEventListener("beforeunload", userLeft);
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on("connect", async () => {
       socket.emit("user_joining_room", {
         name: searchParams.get("name"),
@@ -31,36 +38,32 @@ const GameArea = () => {
         userId: socket.id,
       });
       setUserId(socket.id);
+      setIsHost(false);
     });
   }, [socket.id]);
 
-  socket.on("user_joined", ({ name, isHost }) => {
-    console.log("JOINED: ", name, isHost);
-    setIsHost(isHost);
-    setUsername(name);
+  socket.on("user_joined", ({ name, isHost, userId: newUserId }) => {
+    // toast: New User Joined!
   });
 
-  socket.on("host_changed", ({ hostId }) => {
-    console.log("Host-Changed: ", hostId, socket.id);
-    setIsHost(hostId === socket.id);
+  socket.on("disconnect", () => {
+    console.log("socket.disconnected", socket.id, userId);
   });
 
-  useEffect(() => {
-    socket.on("user_left", () => {
-      socket.disconnect();
-    });
-  }, [socket]);
+  socket.on("host_changed", ({ hostId: newHostId }) => {
+    console.log("Host Changed");
+    if (newHostId === socket.id) {
+      // toast: You are now the host
+    }
+    setIsHost(newHostId === socket.id);
+  });
 
-  useEffect(() => {
-    return () => {
-      userLeft();
-      window.removeEventListener("beforeunload", userLeft);
-    };
-  }, []);
+  socket.on("user_left", () => {
+    console.log("User LEFT");
+  });
 
   const userLeft = () => {
     socket.emit("user_leaving_room", { roomId, userId: socket.id });
-    socket.disconnect();
   };
 
   return (

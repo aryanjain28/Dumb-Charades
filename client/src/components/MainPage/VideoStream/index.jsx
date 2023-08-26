@@ -4,10 +4,11 @@ import Streamer from "./Streamer";
 import { useState } from "react";
 
 const VideoStream = ({ hostId, isHost }) => {
-  // return <></>;
+  return <></>;
+
   return (
     <>
-      {hostId === null ? (
+      {isHost === null ? (
         <>Connecting...</>
       ) : isHost ? (
         <Streamer />
