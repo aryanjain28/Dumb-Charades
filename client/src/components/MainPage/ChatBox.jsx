@@ -3,7 +3,9 @@ import { useState } from "react";
 import s from "string-similarity";
 
 const Chat = ({ value, name, dateTime, movie }) => {
-  const percent = parseInt(s.compareTwoStrings(movie, value) * 100);
+  const percent = parseInt(
+    s.compareTwoStrings(movie.toLowerCase(), value) * 100
+  );
 
   return (
     <Box
@@ -160,7 +162,7 @@ const ChatBox = (props) => {
           onChange={(e) => {
             setMessage(e.target.value);
           }}
-          // disabled={isHost}
+          disabled={isHost}
           value={message}
           onKeyUp={(e) => {
             if (e.key === "Enter" && message) {

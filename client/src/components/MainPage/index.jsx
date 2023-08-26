@@ -20,7 +20,7 @@ const GameArea = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isHost) getMovie();
+    getMovie();
   }, [isHost]);
 
   useEffect(() => {
