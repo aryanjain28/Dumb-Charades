@@ -102,7 +102,7 @@ io.on("connection", (socket) => {
 
   const findAndSetNewHost = (roomId) => {
     const sids = io.sockets.adapter.rooms.get(roomId);
-    if (sids.size === 0) return;
+    if (!sids || sids.size === 0) return;
 
     const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
     const currHost = sockets.find(({ isHost }) => isHost);

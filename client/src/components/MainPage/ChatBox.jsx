@@ -1,59 +1,6 @@
 import { Box, Button, Dialog, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
-const chats = [
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-  "Hello",
-  "Ths",
-  "is",
-  "an",
-  "exapmle",
-];
-
 const Chat = ({ value, name, dateTime }) => {
   return (
     <Box
@@ -82,7 +29,7 @@ const Chat = ({ value, name, dateTime }) => {
 };
 
 const ChatBox = (props) => {
-  const { socket, name, roomId } = props;
+  const { socket, name, roomId, isHost } = props;
 
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
@@ -186,6 +133,7 @@ const ChatBox = (props) => {
           onChange={(e) => {
             setMessage(e.target.value);
           }}
+          disabled={isHost}
           value={message}
           onKeyUp={(e) => {
             if (e.key === "Enter" && message) {

@@ -82,6 +82,7 @@ const GameArea = () => {
             socket={socket}
             roomId={searchParams.get("roomId")}
             name={searchParams.get("name")}
+            isHost={isHost}
           />
         )}
       </Grid>
@@ -95,7 +96,7 @@ const GameArea = () => {
         justifyContent="start"
         gap={1}
       >
-        <GuessString text={`Host: ${isHost} ${userId} `} />
+        <GuessString isHost={isHost} />
         {userId !== null && (
           <VideoStreaming socket={socket} hostId={userId} isHost={isHost} />
         )}
