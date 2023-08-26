@@ -5,7 +5,7 @@ import GuessString from "./GuessString";
 import VideoStreaming from "./VideoStream/index";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import axios from "axios";
+import { toast } from "react-toastify";
 
 const GameArea = () => {
   const socket = io.connect("http://localhost:3001");
@@ -43,7 +43,9 @@ const GameArea = () => {
   }, [socket.id]);
 
   socket.on("user_joined", ({ name, isHost, userId: newUserId }) => {
-    // toast: New User Joined!
+    if (newUserId !== socket.id) {
+      toast.success(`New User Joined ${name}`);
+    }
   });
 
   socket.on("disconnect", () => {
@@ -53,13 +55,13 @@ const GameArea = () => {
   socket.on("host_changed", ({ hostId: newHostId }) => {
     console.log("Host Changed");
     if (newHostId === socket.id) {
-      // toast: You are now the host
+      toast.success("You are now the host");
     }
     setIsHost(newHostId === socket.id);
   });
 
   socket.on("user_left", () => {
-    console.log("User LEFT");
+    toast.error("User Left");
   });
 
   const userLeft = () => {
