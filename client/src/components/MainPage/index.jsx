@@ -20,7 +20,7 @@ const GameArea = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getMovie();
+    if (isHost) getMovie();
   }, [isHost]);
 
   useEffect(() => {
@@ -43,7 +43,6 @@ const GameArea = () => {
         userId: socket.id,
       });
       setUserId(socket.id);
-      // setIsHost(false);
     });
   }, [socket.id]);
 
@@ -51,17 +50,28 @@ const GameArea = () => {
     if (newUserId !== socket.id) {
       toast.success(`New User Joined ${name}`);
     }
+    console.log("isHost: ", isHost);
+    if (isHost) {
+      console.log("emitting");
+      socket.emit("movie_set", { roomId, movie });
+    }
     setIsHost(hostId === socket.id);
   });
 
+  useEffect(() => {
+    if (isHost) {
+      socket.emit("movie_set", { roomId, movie });
+    }
+  }, [movie]);
+
   socket.on("disconnect", () => {
-    console.log("socket.disconnected", socket.id, userId);
+    // console.log("socket.disconnected", socket.id, userId);
   });
 
   socket.on("host_changed", ({ hostId: newHostId }) => {
-    console.log("Host Changed");
     if (newHostId === socket.id) {
       toast.success("You are now the host");
+      socket.emit("movie_set", { roomId, movie });
     }
     setIsHost(newHostId === socket.id);
   });
@@ -80,6 +90,7 @@ const GameArea = () => {
     const { results } = (await axios.get(url)).data;
     const movie = results[Math.floor(Math.random() * results.length)];
     setMovie(movie.original_title);
+    socket.emit("movie_set", { roomId, movie: movie.original_title });
   };
 
   return (
@@ -110,7 +121,7 @@ const GameArea = () => {
         justifyContent="start"
         gap={1}
       >
-        {movie && <GuessString isHost={isHost} movie={movie} />}
+        {isHost && <GuessString isHost={isHost} movie={movie} />}
         {userId !== null && (
           <VideoStreaming socket={socket} hostId={userId} isHost={isHost} />
         )}

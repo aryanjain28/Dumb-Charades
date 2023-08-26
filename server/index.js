@@ -96,6 +96,11 @@ io.on("connection", (socket) => {
     io.to(data.roomId).emit("receive_message", data);
   });
 
+  socket.on("movie_set", ({ roomId, movie }) => {
+    console.log("MOVIE: ", movie);
+    io.to(roomId).emit("set_movie", { movie });
+  });
+
   socket.on("disconnect", () => {
     Array.from(socket.rooms).forEach((rid) => socket.leave(rid));
   });

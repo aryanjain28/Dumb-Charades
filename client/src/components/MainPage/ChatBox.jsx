@@ -3,6 +3,7 @@ import { useState } from "react";
 import s from "string-similarity";
 
 const Chat = ({ value, name, dateTime, movie }) => {
+  console.log("Chat: ", movie);
   const percent = parseInt(
     s.compareTwoStrings(movie.toLowerCase(), value) * 100
   );
@@ -52,11 +53,12 @@ const Chat = ({ value, name, dateTime, movie }) => {
 };
 
 const ChatBox = (props) => {
-  const { socket, name, roomId, isHost, movie } = props;
+  const { socket, name, roomId, isHost } = props;
 
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
   const [users, setUsers] = useState([]);
+  const [movie, setMovie] = useState("");
 
   socket.on("receive_message", (data) => {
     if (data.userId === socket.id) return;
@@ -65,6 +67,11 @@ const ChatBox = (props) => {
 
   socket.on("room_updated", ({ names }) => {
     setUsers((u) => [...names]);
+  });
+
+  socket.on("set_movie", ({ movie }) => {
+    console.log(movie);
+    setMovie(movie);
   });
 
   const sendMessage = async () => {
