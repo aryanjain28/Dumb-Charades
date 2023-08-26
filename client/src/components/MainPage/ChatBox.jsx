@@ -169,6 +169,7 @@ const ChatBox = (props) => {
         </Box>
       )}
       <Box
+        position="relative"
         display="flex"
         flexDirection="column"
         alignItems="end"
@@ -176,6 +177,7 @@ const ChatBox = (props) => {
         overflow="scroll"
         height="100%"
         width="100%"
+        border="1px red solid"
       >
         {chats.map(({ message, name, dateTime }, i) => (
           <Chat key={i} value={message} name={name} dateTime={dateTime} />
@@ -190,7 +192,7 @@ const ChatBox = (props) => {
           }}
           value={message}
           onKeyUp={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && message) {
               e.preventDefault();
               sendMessage();
               setMessage("");
