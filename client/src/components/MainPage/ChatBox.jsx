@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, Dialog, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const chats = [
@@ -189,19 +189,14 @@ const ChatBox = (props) => {
             setMessage(e.target.value);
           }}
           value={message}
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          onClick={(e) => {
-            e.preventDefault();
-            sendMessage();
-            setMessage("");
+          onKeyUp={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              sendMessage();
+              setMessage("");
+            }
           }}
-          sx={{ bgcolor: "#0f1c52", textTransform: "none" }}
-        >
-          Send
-        </Button>
+        />
       </Box>
     </Box>
   );

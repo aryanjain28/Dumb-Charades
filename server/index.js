@@ -115,7 +115,6 @@ io.on("connection", (socket) => {
     if (sids.size === 0) return [];
     const sockets = Array.from(sids).map((id) => io.sockets.sockets.get(id));
     const names = sockets?.map(({ name }) => name);
-    console.log(names);
     return names;
   };
 });
