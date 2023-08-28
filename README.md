@@ -28,7 +28,12 @@ Get ready for some exciting rounds of movie charades! 🍀🎭 Your creativity a
 
 ## The Tech
 
-This project utilizes an SFU (Signal-Forwarding-Unit) network architecture to establish peer-to-peer connections. Specifically, each player's end (client or browser) creates a peer, which is then linked to another peer acting as the server. This peer is set up using the standard WebRTC provided by JavaScript.
+This project utilizes an SFU (Selective-Forwarding-Unit) network architecture to establish peer-to-peer connections. Specifically, each player's end (client or browser) creates a peer, which is then linked to another peer acting as the server. This peer is set up using the standard WebRTC provided by JavaScript.
+
+SFU Architecture:
+
+<img src="/ss/SFU.png" alt="SFU" style="width:400px;"/>
+
 
 Starting with the video aspect, the designated player (referred to as the streamer) initiates a peer connection with the server. This enables them to stream their webcam feed to the server. The server captures this feed and awaits a connection request from a viewer. Once a viewer requests this connection, a new link is formed between the viewer and the server. Once established, the server starts transmitting the streamer's webcam feed to the viewer.
 
