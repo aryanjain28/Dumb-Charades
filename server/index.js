@@ -89,7 +89,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("host_started_streaming", ({ roomId }) => {
-    io.to(roomId).emit("host_streaming");
+    console.log("Restart streaming for viewer");
+    socket.broadcast.emit("host_streaming", {
+      message: "Restart Peer Connection",
+    });
   });
 
   socket.on("send_message", (data) => {

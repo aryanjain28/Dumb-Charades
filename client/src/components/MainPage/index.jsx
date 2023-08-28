@@ -78,7 +78,6 @@ const GameArea = () => {
   });
 
   socket.on("movie_for_you", ({ movie }) => {
-    console.log("Host send you movie: ", movie);
     setMovie(movie);
   });
 
@@ -128,19 +127,7 @@ const GameArea = () => {
           <VideoStreaming socket={socket} hostId={userId} isHost={isHost} />
         )}
       </Grid>
-      <Grid item>
-        <Button
-          sx={{ textTransform: "none" }}
-          variant="contained"
-          color="error"
-          onClick={() => {
-            userLeft();
-            navigate("/");
-          }}
-        >
-          {movie}
-        </Button>
-      </Grid>
+      <Grid item></Grid>
     </Grid>
   );
 };

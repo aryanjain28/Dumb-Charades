@@ -3,8 +3,6 @@ import Viewer from "./Viewer";
 import Streamer from "./Streamer";
 
 const VideoStream = ({ socket, hostId, isHost, roomId }) => {
-  return <></>;
-
   return (
     <>
       {isHost === null ? (

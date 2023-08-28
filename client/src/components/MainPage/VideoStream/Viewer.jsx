@@ -11,8 +11,18 @@ const Viewer = ({ socket, roomId }) => {
     handleViewerStreamingStart();
   }, []);
 
-  socket.on("host_streaming", () => {
-    console.log("Restarting Viewer Peer Connection");
+  // useEffect(() => {
+  //   console.log("Useefff with socket");
+  //   socket.on("host_streaming", ({ message }) => {
+  //     console.log("Message: ", message);
+  //     console.log("asdasd Restarting Viewer Peer Connection");
+  //     handleViewerStreamingStart();
+  //   });
+  // }, [socket]);
+
+  socket.on("host_streaming", ({ message }) => {
+    console.log("Message: ", message);
+    console.log("asdasd Restarting Viewer Peer Connection");
     handleViewerStreamingStart();
   });
 
@@ -23,8 +33,6 @@ const Viewer = ({ socket, roomId }) => {
   let peer;
   const createPeerViewer = async (cb) => {
     peer = new RTCPeerConnection();
-    console.log("Creating new Peer Connection.");
-
     peer.addEventListener("signalingstatechange", (e) =>
       console.log("Viewer SignalingState: ", peer.signalingState)
     );
