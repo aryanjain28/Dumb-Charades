@@ -2,10 +2,9 @@ import { Box, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import s from "string-similarity";
 
-const Chat = ({ value, name, dateTime, movie }) => {
-  console.log("Chat: ", movie);
+const Chat = ({ socket, value, name, dateTime, movie }) => {
   const percent = parseInt(
-    s.compareTwoStrings(movie.toLowerCase(), value) * 100
+    s.compareTwoStrings(movie.toLowerCase(), value.toLowerCase()) * 100
   );
 
   return (
@@ -13,7 +12,7 @@ const Chat = ({ value, name, dateTime, movie }) => {
       m={1}
       p={1}
       position="relative"
-      border="1px gray solid"
+      border={`${percent >= 90 ? "4px #66bb6a" : "1px lightgray"} solid`}
       borderRadius={1}
       display="flex"
       flexDirection="column"
@@ -53,12 +52,11 @@ const Chat = ({ value, name, dateTime, movie }) => {
 };
 
 const ChatBox = (props) => {
-  const { socket, name, roomId, isHost } = props;
+  const { socket, name, roomId, isHost, movie } = props;
 
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
   const [users, setUsers] = useState([]);
-  const [movie, setMovie] = useState("");
 
   socket.on("receive_message", (data) => {
     if (data.userId === socket.id) return;
@@ -67,11 +65,6 @@ const ChatBox = (props) => {
 
   socket.on("room_updated", ({ names }) => {
     setUsers((u) => [...names]);
-  });
-
-  socket.on("set_movie", ({ movie }) => {
-    console.log(movie);
-    setMovie(movie);
   });
 
   const sendMessage = async () => {
@@ -159,17 +152,17 @@ const ChatBox = (props) => {
             name={name}
             dateTime={dateTime}
             movie={movie}
+            socket={socket}
           />
         ))}
       </Box>
-      <Box display="flex" width={1} gap={1}>
+      <Box display={isHost ? "none" : "flex"} width={1} gap={1}>
         <TextField
           fullWidth
           placeholder="Start typing..."
           onChange={(e) => {
             setMessage(e.target.value);
           }}
-          disabled={isHost}
           value={message}
           onKeyUp={(e) => {
             if (e.key === "Enter" && message) {

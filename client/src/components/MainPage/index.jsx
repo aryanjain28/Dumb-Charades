@@ -20,10 +20,6 @@ const GameArea = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isHost) getMovie();
-  }, [isHost]);
-
-  useEffect(() => {
     socket.connect();
     window.addEventListener("beforeunload", userLeft);
   }, []);
@@ -48,21 +44,18 @@ const GameArea = () => {
 
   socket.on("user_joined", ({ name, userId: newUserId, hostId }) => {
     if (newUserId !== socket.id) {
-      toast.success(`New User Joined ${name}`);
+      toast.success(`New User Joined ${name}`, {
+        position: "bottom-right",
+        autoClose: 1000,
+        hideProgressBar: true,
+      });
     }
-    console.log("isHost: ", isHost);
-    if (isHost) {
-      console.log("emitting");
-      socket.emit("movie_set", { roomId, movie });
+    // if host: send that movie to specific user
+    if (hostId === socket.id) {
+      socket.emit("send_movie_to_user", { roomId, userId: newUserId });
     }
     setIsHost(hostId === socket.id);
   });
-
-  useEffect(() => {
-    if (isHost) {
-      socket.emit("movie_set", { roomId, movie });
-    }
-  }, [movie]);
 
   socket.on("disconnect", () => {
     // console.log("socket.disconnected", socket.id, userId);
@@ -71,13 +64,22 @@ const GameArea = () => {
   socket.on("host_changed", ({ hostId: newHostId }) => {
     if (newHostId === socket.id) {
       toast.success("You are now the host");
-      socket.emit("movie_set", { roomId, movie });
+      getMovie();
     }
     setIsHost(newHostId === socket.id);
   });
 
   socket.on("user_left", () => {
-    toast.error("User Left");
+    toast.error("User Left", {
+      position: "bottom-right",
+      autoClose: 1000,
+      hideProgressBar: true,
+    });
+  });
+
+  socket.on("movie_for_you", ({ movie }) => {
+    console.log("Host send you movie: ", movie);
+    setMovie(movie);
   });
 
   const userLeft = () => {
@@ -136,7 +138,7 @@ const GameArea = () => {
             navigate("/");
           }}
         >
-          Exit
+          {movie}
         </Button>
       </Grid>
     </Grid>

@@ -28,7 +28,7 @@ const io = new Server(server, {
   wsEngine: require("ws").Server,
 });
 
-let peerRooms = {};
+let roomData = {};
 
 io.of("/").adapter.on("create-room", (room) => {
   // console.log(`CREATE: ${room}`);
@@ -97,8 +97,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("movie_set", ({ roomId, movie }) => {
-    console.log("MOVIE: ", movie);
-    io.to(roomId).emit("set_movie", { movie });
+    roomData[roomId] = movie;
+    socket.to(roomId).emit("movie_for_you", { movie: roomData[roomId] });
+  });
+
+  socket.on("send_movie_to_user", ({ roomId, userId }) => {
+    socket.to(roomId).emit("movie_for_you", { movie: roomData[roomId] });
   });
 
   socket.on("disconnect", () => {
