@@ -51,12 +51,15 @@ In summary, this project employs SFU architecture for peer-to-peer connections, 
 
 
 1. Create or Join room
+   
 ![Create or Join room](/ss/SS_1.png)
 
 2. Streamer (muted webcam feed)
+
 ![Create or Join room](/ss/SS_8.png)
 
 3. Viewer (will watch the streamer's video feed and try to quickly guess in the chatbox)
+
 ![Create or Join room](/ss/SS_12.png)
 
 
