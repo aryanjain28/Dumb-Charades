@@ -1,5 +1,7 @@
 # Dumb-Charades
 
+Note: I've written a short blog on WebRTC, please read it and let me know you comments via email! :)
+
 Welcome to a fun game of charades with a twist. 😄
 I'll start with the game rules first, and then I'll talk about the technical details. 🎮🕹️
 
